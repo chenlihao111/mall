@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,13 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
     private PortalProductDao portalProductDao;
 
     @Override
-    public List<PmsProduct> search(String keyword, Long brandId, Long productCategoryId, Integer pageNum, Integer pageSize, Integer sort) {
+    public List<PmsProduct> search(String keyword, Long brandId, Long productCategoryId, BigDecimal minPrice, BigDecimal maxPrice,
+                                   Integer pageNum, Integer pageSize, Integer sort) {
+        if ((minPrice != null && minPrice.signum() < 0)
+                || (maxPrice != null && maxPrice.signum() < 0)
+                || (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0)) {
+            throw new IllegalArgumentException("价格区间无效");
+        }
         PageHelper.startPage(pageNum, pageSize);
         PmsProductExample example = new PmsProductExample();
         PmsProductExample.Criteria criteria = example.createCriteria();
@@ -56,6 +63,12 @@ public class PmsPortalProductServiceImpl implements PmsPortalProductService {
         }
         if (productCategoryId != null) {
             criteria.andProductCategoryIdEqualTo(productCategoryId);
+        }
+        if (minPrice != null) {
+            criteria.andPriceGreaterThanOrEqualTo(minPrice);
+        }
+        if (maxPrice != null) {
+            criteria.andPriceLessThanOrEqualTo(maxPrice);
         }
         //1->按新品；2->按销量；3->价格从低到高；4->价格从高到低
         if (sort == 1) {

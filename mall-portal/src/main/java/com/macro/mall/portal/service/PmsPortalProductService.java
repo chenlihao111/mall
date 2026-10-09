@@ -4,6 +4,7 @@ import com.macro.mall.model.PmsProduct;
 import com.macro.mall.portal.domain.PmsPortalProductDetail;
 import com.macro.mall.portal.domain.PmsProductCategoryNode;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -14,7 +15,8 @@ public interface PmsPortalProductService {
     /**
      * 综合搜索商品
      */
-    List<PmsProduct> search(String keyword, Long brandId, Long productCategoryId, Integer pageNum, Integer pageSize, Integer sort);
+    List<PmsProduct> search(String keyword, Long brandId, Long productCategoryId, BigDecimal minPrice, BigDecimal maxPrice,
+                            Integer pageNum, Integer pageSize, Integer sort);
 
     /**
      * 以树形结构获取所有商品分类
