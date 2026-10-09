@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -37,10 +38,18 @@ public class PmsPortalProductController {
     public CommonResult<CommonPage<PmsProduct>> search(@RequestParam(required = false) String keyword,
                                                        @RequestParam(required = false) Long brandId,
                                                        @RequestParam(required = false) Long productCategoryId,
+                                                       @RequestParam(required = false) BigDecimal minPrice,
+                                                       @RequestParam(required = false) BigDecimal maxPrice,
                                                        @RequestParam(required = false, defaultValue = "0") Integer pageNum,
                                                        @RequestParam(required = false, defaultValue = "5") Integer pageSize,
                                                        @RequestParam(required = false, defaultValue = "0") Integer sort) {
-        List<PmsProduct> productList = portalProductService.search(keyword, brandId, productCategoryId, pageNum, pageSize, sort);
+        if ((minPrice != null && minPrice.signum() < 0)
+                || (maxPrice != null && maxPrice.signum() < 0)
+                || (minPrice != null && maxPrice != null && minPrice.compareTo(maxPrice) > 0)) {
+            return CommonResult.validateFailed("价格区间无效");
+        }
+        List<PmsProduct> productList = portalProductService.search(keyword, brandId, productCategoryId,
+                minPrice, maxPrice, pageNum, pageSize, sort);
         return CommonResult.success(CommonPage.restPage(productList));
     }
 
